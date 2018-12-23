@@ -1,0 +1,31 @@
+[package]
+authors = ["James Howard <jrobhoward@gmail.com>"]
+description = "An encrypted bincode serialization strategy for Serde"
+edition = "2018"
+license = "MIT/Apache-2.0"
+name = "bincode_aes"
+version = "0.1.0"
+
+[dependencies]
+bincode = "1.0.1"
+byteorder = "1.2.0"
+openssl = "0.10"
+rand = "0.6.1"
+rust-crypto = "^0.2"
+serde = "^1.0.63"
+serde_bytes = "^0.10.3"
+serde_derive = "^1.0.27"
+
+[dev-dependencies]
+quickcheck = "0.7.2"
+
+[profile.release]
+codegen-units = 1
+debug = true
+debug-assertions = false
+incremental = false
+lto = true
+opt-level = 3
+panic = 'abort'
+rpath = false
+overflow-checks = true
