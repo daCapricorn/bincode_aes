@@ -34,7 +34,6 @@ What I have now works well-enough in its current state for my own purposes.
 Here are some improvements that may be coming in the future.
 
 ### Short Term:
-* Add a function to convert Vec<u8> into a Key.
 * Get rid of all `unwrap()` occurrences & propagate result errors appropriately.
 * Wrap IV and EncryptedData in an enum, so additional ciphers/modes/key-lengths can be added without breaking compatibility.
 
