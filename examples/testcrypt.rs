@@ -1,3 +1,8 @@
+// Use system malloc
+use std::alloc::System;
+#[global_allocator]
+static GLOBAL: System = System;
+
 #[macro_use]
 extern crate serde_derive;
 

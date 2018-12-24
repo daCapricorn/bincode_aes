@@ -6,8 +6,8 @@
 //! ```rust
 //! extern crate bincode_aes;
 //! fn main() {
-//!     let bc = bincode_aes::with_key(key);
 //!     let key = bincode_aes::random_key();
+//!     let bc = bincode_aes::with_key(key);
 //!     let target: Option<String>  = Some("hello world".to_string());
 //!
 //!     let mut encoded: Vec<u8>    = bc.serialize(&target).unwrap();
@@ -49,6 +49,10 @@ struct SerializedResult {
 
 pub struct BincodeCryptor {
     key: Key,
+}
+
+pub enum CryptorError {
+    InvalidKeySize,
 }
 
 /// Returns a keyed BincodeCryptor
@@ -100,6 +104,14 @@ pub fn random_key() -> Key {
     let mut rng = OsRng::new().unwrap();
     rng.fill(&mut key[..]);
     Key(key)
+}
+
+/// creates a chosen AES key
+pub fn create_key(key_bytes: Vec<u8>) -> Result<Key, CryptorError> {
+    if key_bytes.len() != KEY_LEN {
+        return Err(CryptorError::InvalidKeySize);
+    }
+    Ok(Key(key_bytes))
 }
 
 fn random_iv() -> IV {

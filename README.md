@@ -1,14 +1,15 @@
 # bincode_aes
 
 ## Summary
-`bincode_aes` is a decorated bincode serializer/deserializer.  The intent is to transparently encrypt/decrypt bytes as they are serialized/deserialized.
+`bincode_aes` is a decorated bincode serializer/deserializer.
+Its purpose is to transparently encrypt (and decrypt) bytes as they are serialized/deserialized.
 
 ## Example
 ```rust
 extern crate bincode_aes;
 fn main() {
-    let bc = bincode_aes::with_key(key);
     let key = bincode_aes::random_key();
+    let bc = bincode_aes::with_key(key);
     let target: Option<String>  = Some("hello world".to_string());
 
     let mut encoded: Vec<u8>    = bc.serialize(&target).unwrap();
