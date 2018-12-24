@@ -6,9 +6,8 @@
 //! ```rust
 //! extern crate bincode_aes;
 //! fn main() {
-//!     // The object that we will serialize.
-//!     let key = bincode_aes::random_key();
 //!     let bc = bincode_aes::with_key(key);
+//!     let key = bincode_aes::random_key();
 //!     let target: Option<String>  = Some("hello world".to_string());
 //!
 //!     let mut encoded: Vec<u8>    = bc.serialize(&target).unwrap();
