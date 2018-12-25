@@ -35,11 +35,13 @@ const KEY_LEN: usize = 32;
 /// initialization vector length (AES-256-CBC)
 const IV_LEN: usize = 16;
 
-// distinct/strong types wrapping u8 vectors
+/// wrapped/strong type for serialized ciphertext
 #[derive(Serialize, Deserialize)]
 pub struct EncryptedData(Vec<u8>);
 #[derive(Serialize, Deserialize)]
+/// wrapped/strong type for initialization vector
 pub struct IV(Vec<u8>);
+/// wrapped/strong type for crypto key
 pub struct Key(Vec<u8>);
 
 /// public struct used for encrypted serialization
@@ -53,6 +55,7 @@ enum CryptorStrategy<T> {
     AES256CBC(T),
 }
 
+/// potential BincodeCryptor error types
 pub enum CryptorError {
     InvalidKeySize,
 }
