@@ -1,10 +1,10 @@
 [package]
 authors = ["James Howard <jrobhoward@gmail.com>"]
-description = "An encrypted bincode serialization strategy for Serde"
+description = "Encrypted bincode serialization"
 edition = "2018"
 license = "MIT/Apache-2.0"
 name = "bincode_aes"
-version = "0.1.0"
+version = "1.0.0"
 
 [dependencies]
 bincode = "1.0.1"
