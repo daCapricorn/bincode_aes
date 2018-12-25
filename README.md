@@ -50,3 +50,8 @@ Here are some improvements that may be coming in the future.
 * Find a way to derive a key from `~/.ssh/id_rsa`, using `ssh-agent` or `keyring` to prompt for password just one time.
 * Get the key from a pluggable trait/interface (stdin, yubikey, id_rsa, syscall, ??).
 * Create a custom allocator to pin key into memory and wipe memory when the key is disposed.
+
+## License
+
+bincode_aes is dual licensed under the MIT and Apache 2.0 licenses, the same licenses
+as the Rust compiler.
