@@ -42,21 +42,29 @@ pub struct EncryptedData(Vec<u8>);
 pub struct IV(Vec<u8>);
 pub struct Key(Vec<u8>);
 
-#[derive(Serialize, Deserialize)]
-struct SerializedResult {
-    iv: IV,
-    encrypted_data: EncryptedData,
-}
-
+/// public struct used for encrypted serialization
 pub struct BincodeCryptor {
     key: Key,
+}
+
+/// encryption strategy used
+#[derive(Serialize, Deserialize)]
+enum CryptorStrategy<T> {
+    AES256CBC(T),
 }
 
 pub enum CryptorError {
     InvalidKeySize,
 }
 
-/// Returns a keyed BincodeCryptor
+/// primary/high-level struct that is serialized and returned as a vector of bytes
+#[derive(Serialize, Deserialize)]
+struct SerializedResult {
+    iv: Option<IV>,
+    encrypted_data: CryptorStrategy<EncryptedData>,
+}
+
+/// Returns a keyed BincodeCryptor (~= constructor)
 pub fn with_key(key: Key) -> BincodeCryptor {
     BincodeCryptor { key }
 }
@@ -70,7 +78,8 @@ impl BincodeCryptor {
         let iv = random_iv()?;
         let bincoded_value = bincode::serialize(value)?;
         let encrypted_value = encrypt(bincoded_value.as_slice(), &self.key, &iv)?;
-        let encrypted_data = EncryptedData(encrypted_value);
+        let encrypted_data = CryptorStrategy::AES256CBC(EncryptedData(encrypted_value));
+        let iv = Some(iv);
 
         let serialized_result = SerializedResult { iv, encrypted_data };
         let result = bincode::serialize(&serialized_result)?;
@@ -84,13 +93,11 @@ impl BincodeCryptor {
         T: serde::de::Deserialize<'a>,
     {
         let serialized_result: SerializedResult = bincode::deserialize(&bytes[..])?;
+        let CryptorStrategy::AES256CBC(encrypted_data) = serialized_result.encrypted_data;
+        let iv = serialized_result.iv.unwrap();
 
         // ideally, we would decrypt in-place
-        let decrypted_data = decrypt(
-            &serialized_result.encrypted_data.0.as_slice(),
-            &self.key,
-            &serialized_result.iv,
-        )?;
+        let decrypted_data = decrypt(&encrypted_data.0.as_slice(), &self.key, &iv)?;
         bytes.clear();
         bytes.extend_from_slice(decrypted_data.as_slice());
         Ok(bincode::deserialize(&bytes[..])?)

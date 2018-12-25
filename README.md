@@ -34,7 +34,6 @@ What I have now works well-enough in its current state for my own purposes.
 Here are some improvements that may be coming in the future.
 
 ### Short Term:
-* Wrap Initialization Vector (IV) and EncryptedData in an enum, so additional ciphers/modes/key-lengths can be added without breaking compatibility.
 * Add more tests
 
 ### Long Term:
