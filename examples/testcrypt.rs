@@ -16,7 +16,7 @@ struct Entity {
 struct World(Vec<Entity>);
 
 fn main() {
-    let key = bincode_aes::random_key();
+    let key = bincode_aes::random_key().unwrap();
     let bc = bincode_aes::with_key(key);
 
     let world = World(vec![Entity { x: 0.0, y: 4.0 }, Entity { x: 10.0, y: 20.5 }]);

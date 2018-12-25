@@ -6,7 +6,7 @@
 //! ```rust
 //! extern crate bincode_aes;
 //! fn main() {
-//!     let key = bincode_aes::random_key();
+//!     let key = bincode_aes::random_key().unwrap();
 //!     let bc = bincode_aes::with_key(key);
 //!     let target: Option<String>  = Some("hello world".to_string());
 //!
@@ -23,9 +23,10 @@ extern crate crypto;
 extern crate rand;
 
 use crypto::buffer::{BufferResult, ReadBuffer, WriteBuffer};
-use crypto::{aes, blockmodes, buffer, symmetriccipher};
+use crypto::{aes, blockmodes, buffer};
 use rand::rngs::OsRng;
 use rand::Rng;
+use std::error;
 
 /// size of in-mem buffers used for crypto operations
 const BUFFER_SIZE: usize = 8192;
@@ -62,48 +63,46 @@ pub fn with_key(key: Key) -> BincodeCryptor {
 
 impl BincodeCryptor {
     /// Serializes a serializable object into a `Vec` of bytes
-    pub fn serialize<T: ?Sized>(&self, value: &T) -> bincode::Result<Vec<u8>>
+    pub fn serialize<T: ?Sized>(&self, value: &T) -> Result<Vec<u8>, Box<error::Error>>
     where
         T: serde::Serialize,
     {
-        let iv = random_iv();
+        let iv = random_iv()?;
         let bincoded_value = bincode::serialize(value)?;
-        let encrypted_value = encrypt(bincoded_value.as_slice(), &self.key, &iv).unwrap();
+        let encrypted_value = encrypt(bincoded_value.as_slice(), &self.key, &iv)?;
         let encrypted_data = EncryptedData(encrypted_value);
 
         let serialized_result = SerializedResult { iv, encrypted_data };
-        let result = bincode::serialize(&serialized_result).unwrap();
+        let result = bincode::serialize(&serialized_result)?;
 
         Ok(result)
     }
 
     /// Deserializes a slice of bytes into an instance of `T`
-    pub fn deserialize<'a, T>(&'a self, bytes: &'a mut Vec<u8>) -> bincode::Result<T>
+    pub fn deserialize<'a, T>(&'a self, bytes: &'a mut Vec<u8>) -> Result<T, Box<error::Error>>
     where
         T: serde::de::Deserialize<'a>,
     {
-        let serialized_result: SerializedResult = bincode::deserialize(&bytes[..]).unwrap();
+        let serialized_result: SerializedResult = bincode::deserialize(&bytes[..])?;
 
         // ideally, we would decrypt in-place
         let decrypted_data = decrypt(
             &serialized_result.encrypted_data.0.as_slice(),
             &self.key,
             &serialized_result.iv,
-        )
-        .ok()
-        .unwrap();
+        )?;
         bytes.clear();
         bytes.extend_from_slice(decrypted_data.as_slice());
-        bincode::deserialize(&bytes[..])
+        Ok(bincode::deserialize(&bytes[..])?)
     }
 }
 
 /// creates a random AES key
-pub fn random_key() -> Key {
+pub fn random_key() -> Result<Key, Box<error::Error>> {
     let mut key = vec![0; KEY_LEN];
-    let mut rng = OsRng::new().unwrap();
+    let mut rng = OsRng::new()?;
     rng.fill(&mut key[..]);
-    Key(key)
+    Ok(Key(key))
 }
 
 /// creates a chosen AES key
@@ -114,18 +113,14 @@ pub fn create_key(key_bytes: Vec<u8>) -> Result<Key, CryptorError> {
     Ok(Key(key_bytes))
 }
 
-fn random_iv() -> IV {
+fn random_iv() -> Result<IV, Box<error::Error>> {
     let mut iv = vec![0; IV_LEN];
-    let mut rng = OsRng::new().unwrap();
+    let mut rng = OsRng::new()?;
     rng.fill(&mut iv[..]);
-    IV(iv)
+    Ok(IV(iv))
 }
 
-fn encrypt(
-    data: &[u8],
-    key: &Key,
-    iv: &IV,
-) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
+fn encrypt(data: &[u8], key: &Key, iv: &IV) -> Result<Vec<u8>, Box<error::Error>> {
     let mut encryptor = aes::cbc_encryptor(
         aes::KeySize::KeySize256,
         &key.0[..],
@@ -160,11 +155,7 @@ fn encrypt(
     Ok(final_result)
 }
 
-fn decrypt(
-    encrypted_data: &[u8],
-    key: &Key,
-    iv: &IV,
-) -> Result<Vec<u8>, symmetriccipher::SymmetricCipherError> {
+fn decrypt(encrypted_data: &[u8], key: &Key, iv: &IV) -> Result<Vec<u8>, Box<error::Error>> {
     let mut decryptor = aes::cbc_decryptor(
         aes::KeySize::KeySize256,
         &key.0[..],

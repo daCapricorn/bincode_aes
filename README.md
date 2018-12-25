@@ -8,7 +8,7 @@ Its purpose is to transparently encrypt (and decrypt) bytes as they are serializ
 ```rust
 extern crate bincode_aes;
 fn main() {
-    let key = bincode_aes::random_key();
+    let key = bincode_aes::random_key().unwrap();
     let bc = bincode_aes::with_key(key);
     let target: Option<String>  = Some("hello world".to_string());
 
@@ -34,8 +34,8 @@ What I have now works well-enough in its current state for my own purposes.
 Here are some improvements that may be coming in the future.
 
 ### Short Term:
-* Get rid of all `unwrap()` occurrences & propagate result errors appropriately.
-* Wrap IV and EncryptedData in an enum, so additional ciphers/modes/key-lengths can be added without breaking compatibility.
+* Wrap Initialization Vector (IV) and EncryptedData in an enum, so additional ciphers/modes/key-lengths can be added without breaking compatibility.
+* Add more tests
 
 ### Long Term:
 * Consider using other AES modes (e.g. GCM or OCB) to provide authenticated encryption with associated data.
