@@ -56,6 +56,7 @@ enum CryptorStrategy<T> {
 }
 
 /// potential BincodeCryptor error types
+#[derive(Debug)]
 pub enum CryptorError {
     InvalidKeySize,
 }
